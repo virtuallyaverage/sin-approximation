@@ -2,56 +2,56 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import math
+from os.path import exists
+from os import join
 
-from data_generation import GenerateData
+num_epochs = 100000
+model_path = "E:\\coding\\AI\\sin-approximation\\sin\\models\\model_(1.3467501958075445e-06).mdl" #set to None to make a new one
+save_path = f"E:\coding\AI\sin-approximation\sin\models"
+learning_rate = 0.00005
 
-#predefined variables
-dataset_size = 10_000
+# Check if CUDA is available
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
-#get the dataset
-#initiallize the class
-data_generator = GenerateData()
-
-#setup how much data got generate
-data_generator.length_of_dataset = dataset_size
-input_data, output_data = data_generator.get_sin_and_value()
-
-#convert to 32 bit floats
-input_data = input_data.astype(np.float32)
-output_data = output_data.astype(np.float32)
+# Generate input data and calculate sine values as output
+input_data = np.linspace(0, 2 * np.pi, 1000, dtype=np.float32)
+output_data = np.array([math.sin(x) for x in input_data], dtype=np.float32)
 
 # Convert numpy arrays to PyTorch tensors
-input_tensor = torch.from_numpy(input_data.reshape(-1, 1))
-output_tensor = torch.from_numpy(output_data.reshape(-1, 1))
+input_tensor = torch.from_numpy(input_data.reshape(-1, 1)).to(device)
+output_tensor = torch.from_numpy(output_data.reshape(-1, 1)).to(device)
 
-#define the model
-class SinModel(nn.Module):
-    def __init__(self) -> None:
-        super(SinModel, self).__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(1, 50),
-            nn.ReLU(),
-            nn.Linear(50, 100),
-            nn.ReLU(),
-            nn.Linear(100, 25),
-            nn.ReLU(),
-            nn.Linear(25, 1),
-        )
-    
-    #forward function
+# Define the neural network model
+class SineModel(nn.Module):
+    def __init__(self):
+        super(SineModel, self).__init__()
+        self.layer1 = nn.Linear(1, 128)
+        self.layer2 = nn.Linear(128, 64)
+        self.layer3 = nn.Linear(64, 1)
+
     def forward(self, x):
-        return self.layers(x)
-    
-    
+        x = torch.relu(self.layer1(x))
+        x = torch.relu(self.layer2(x))
+        return self.layer3(x)
+
+#load the model
+if model_path != None:
+    assert exists(model_path)
+    model = torch.load(model_path).to(device)
+    print(f"loading model {model_path}")
+else: 
+    model = SineModel().to(device)
+    print("new model created")
+
+
 # Initialize the model, loss function, and optimizer
-model = SinModel()#torch.load("models\model_(0.00013216079969424754)")#SinModel()
 criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Train the model
 previous_loss = 10*9
-num_epochs = 1000
+num_epochs = 100000
 for epoch in range(num_epochs):
     # Forward pass
     outputs = model(input_tensor)
@@ -62,19 +62,20 @@ for epoch in range(num_epochs):
     loss.backward()
     optimizer.step()
 
-    if (epoch+1) % 100 == 0:
+    if (epoch+1) % 1000 == 0:
         print(f'Epoch: {epoch+1}, Loss: {loss.item()}')
         
     if loss.item() < previous_loss:
         model_to_save = model
         previous_loss = loss.item()
+        best_loss = loss.item()
 
 # Test the model with a single input number
-input_number = np.array([7], dtype=np.float32)
-input_number_tensor = torch.from_numpy(input_number.reshape(-1, 1))
-output_number_tensor = model(input_number_tensor)
-output_number = output_number_tensor.detach().numpy()[0][0]
+input_number = np.array([np.pi / 6], dtype=np.float32)
+input_number_tensor = torch.from_numpy(input_number.reshape(-1, 1)).to(device)
+output_number_tensor = model_to_save(input_number_tensor)
+output_number = output_number_tensor.detach().cpu().numpy()[0][0]
 
-print(f'Input number: {input_number[0]}, Output number: {output_number}, expected value: {np.sin(input_number)}')
-
-torch.save(model_to_save, f"E:\coding\AI\sin-approximation\sin\models\model_({loss.item()}).mdl")
+print(f'Input number: {input_number[0]}, Predicted sine: {output_number}, Actual sine: {math.sin(input_number[0])}')
+print(f"the best loss: {best_loss}")
+torch.save(model_to_save, join(save_path, f"\\model_({best_loss}).mdl")
