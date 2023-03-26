@@ -1,5 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset
+from torch import empty, from_numpy, is_tensor
+
 
 class GenerateData():
     """Data generator class for dataset creation with various functions
@@ -19,7 +21,7 @@ class GenerateData():
     """
     def __init__(self, length_of_dataset = None) -> None:
         self.length_of_dataset = length_of_dataset
-        self.verbose = True
+        self.verbose = False
         self.orignal_values = None
         self.output_values = None
         
@@ -52,7 +54,7 @@ class GenerateData():
             (conditionally) tuple of arrays: a tuple of arrays which is the original values and the values from applying sin to that array
         """
         #get orignal values
-        self.orignal_values = np.random.rand(length_of_dataset)
+        self.orignal_values = np.random.rand(self.length_of_dataset)
 
         #get sin values
         self.output_values = np.sin(self.orignal_values)
@@ -93,9 +95,20 @@ class GenerateData():
             def __init__(self) -> None:
                 self.inputs = original_values
                 self.outputs = function_values
+
                 
             def __getitem__(self, index):
-                return self.inputs[index], self.outputs[index]
+                if is_tensor(index):
+                    index = index.tolist()
+            
+                #create tensors from values
+                input_tensor = empty(self.inputs[index])
+                output_tensor = empty(self.outputs[index])
+
+                input_tensor.copy_(from_numpy(self.inputs))
+                output_tensor.copy_(from_numpy(self.outputs))
+                
+                return input_tensor, output_tensor
             
             def __len__(self):
                 return len(self.inputs)
