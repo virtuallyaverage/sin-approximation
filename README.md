@@ -10,5 +10,6 @@ A small weekend project for estimating the sin of a value between 0-2pi
     "model_hash": "0e6dcbaa4f1ce34d5a7bb23910e6abf786b14d70be39bd63e00e8d0e023c9cff", (hash of model arcitecture)
     "average_percentage": 0.3074005784060182 (average error per test value)
     
-    
-    
+# Setup on windows
+* **Install torch ```pip install torch```
+* **Clone repository ```cd install/location/``` ```git clone 
