@@ -47,7 +47,8 @@ def evaluate_models(models_folder:str, num_test:int = 10**4, json_name:str = "mo
         #try to work with the model
         try:
             evaluate_model(model_path, json_name, input_data, output_data)
-        except:
+        except all as ex:
+            print(ex)
             print(f"failed model {model_name}")
             break
         
@@ -62,6 +63,7 @@ def evaluate_model(model_path, json_name, input_data, output_data):
     
     #test the fitness
     total_difference = 0
+    total_percentage_difference = 0
     for index in range(0, len(input_data)):
         
         #get the test values for this itteration
@@ -79,9 +81,15 @@ def evaluate_model(model_path, json_name, input_data, output_data):
         predicted_diff = abs(answer-output_number)
         total_difference += predicted_diff
         
+        #find the percentage of inaccuracy.
+        #if the answer is not zero, just continue
+        if answer != 0:
+            total_percentage_difference += predicted_diff/answer
+        
     #use data to calculate values
     average = total_difference/num_test
     model_fitness =  .1/average
+    average_percentage = total_percentage_difference/num_test
     model_name = model_path.split("\\")[-1]
     
     #read in the json file
@@ -93,6 +101,7 @@ def evaluate_model(model_path, json_name, input_data, output_data):
     print(f"The total difference across {num_test} values is {total_difference}")
     print(f"Average deviation per value: {average}")
     print(f"the model's fitness is {model_fitness}")
+    print(f"the average percentage {average_percentage}")
     
     def hash_model_structure(model):
         """get the hash for the model
@@ -122,7 +131,8 @@ def evaluate_model(model_path, json_name, input_data, output_data):
             "total_deviation": total_difference,
             "average": average,
             "fitness": model_fitness,
-            "model_hash": model_hash
+            "model_hash": model_hash,
+            "average_percentage": average_percentage
         }
         
         # Append the new dictionary to the existing list of records

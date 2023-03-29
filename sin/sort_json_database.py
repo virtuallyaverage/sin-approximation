@@ -7,7 +7,7 @@ with open(json_path, 'r') as file:
     data = json.load(file)
 
 # Sort the data by fitness, from highest to lowest
-data['records'].sort(key=lambda x: x['fitness'], reverse=True)
+data['records'].sort(key=lambda x: x['average_percentage'], reverse=False)
 
 # Save the sorted data back to the file
 with open(json_path, 'w') as file:
