@@ -48,6 +48,7 @@ model = torch.load(model_path).cpu()
 
 print("testing fitness")
 total_difference = 0
+total_percentage_difference = 0
 for index in tqdm(range(0, len(input_data))):
     
     #get the test values for this itteration
@@ -64,10 +65,16 @@ for index in tqdm(range(0, len(input_data))):
     #find the difference between the expected and the answer
     predicted_diff = abs(answer-output_number)
     total_difference += predicted_diff
-
+    
+    #find the percentage of inaccuracy.
+    #if the answer is not zero, just continue
+    if answer != 0:
+        total_percentage_difference += predicted_diff/answer
+        
 #use data to calculate values
 average = total_difference/num_test
 model_fitness =  .1/average
+average_percentage = total_percentage_difference/num_test
 model_name = model_path.split("\\")[-1]
 
 print("cleaning database")
@@ -79,6 +86,7 @@ print(f"Eval for: {model_name}")
 print(f"The total difference across {num_test} values is {total_difference}")
 print(f"Average deviation per value: {average}")
 print(f"the model's fitness is {model_fitness}")
+print(f"the average percentage {average_percentage}")
 
 
 def hash_model_structure(model):
@@ -100,7 +108,8 @@ def write_to_database(database, model):
         "total_deviation": total_difference,
         "average": average,
         "fitness": model_fitness,
-        "model_hash": model_hash
+        "model_hash": model_hash,
+        "average_percentage": average_percentage
     }
     
     # Append the new dictionary to the existing list of records
