@@ -15,7 +15,7 @@ model_name = args.model
 
 #path to model to load
 model_name = args.model
-models_folder = "sin\\models"
+models_folder = "models"
 model_path = os.path.join(models_folder, model_name)
 
 #get number from user
@@ -47,3 +47,4 @@ output_number_tensor = model(input_number_tensor).cpu()
 output_number = output_number_tensor.detach().cpu().numpy()[0][0]
 
 print(f"Number predicted {output_number}")
+useless = input("enter anything to exit: ")
