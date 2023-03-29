@@ -1,5 +1,5 @@
 # sin-approximation 
-A small weekend project for estimating the sin of a value between 0-2pi radians. Mainly for learning the basics of publishing to github, managing versions, and learn the basics of maching learning. This is a quick and dirty project, so there are clear optimizations, bugs, and improvements to be made. But it has succeded in the goals of furthering my knowlege of ML, Github, PyTorch, Database creation, and python in general
+A small weekend project for estimating the sin of a value between 0-2pi radians. Mainly for learning the basics of publishing to github, managing versions, and learn the basics of maching learning. This is a quick and dirty project, so there are clear optimizations, bugs, and improvements to be made. But it has succeded in the goals of furthering my knowlege of ML, Github, PyTorch, Database creation, and python in general.
     
 # Setup on windows
 * Install torch ```pip install torch``` then restart powershell (open a new window)
