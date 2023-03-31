@@ -11,12 +11,12 @@ import hashlib
 
 #path to model to load
 models_folder = "E:\coding\AI\sin-approximation\sin\models"
-model_name = "model_(9.79041715254425e-07).mdl"
+model_name = "model_(2.7785529255197616e-06).mdl"
 model_path = os.path.join(models_folder, model_name)
 json_name = "model_evals.json"
 
 #the number to test values to evaluate, bigger=more accurate but longer to calculate
-num_test = 10**4
+num_test = 10**3
 
 
 #define the model that we are importing
@@ -49,6 +49,10 @@ model = torch.load(model_path).cpu()
 print("testing fitness")
 total_difference = 0
 total_percentage_difference = 0
+predicted_values = np.zeros(num_test)
+
+
+#loop over all test values
 for index in tqdm(range(0, len(input_data))):
     
     #get the test values for this itteration
@@ -62,6 +66,9 @@ for index in tqdm(range(0, len(input_data))):
     output_number_tensor = model(input_number_tensor).cpu()
     output_number = output_number_tensor.detach().cpu().numpy()[0][0]
     
+    #output hte thing to the array thing duh
+    predicted_values[index] = output_number
+    
     #find the difference between the expected and the answer
     predicted_diff = abs(answer-output_number)
     total_difference += predicted_diff
@@ -70,6 +77,12 @@ for index in tqdm(range(0, len(input_data))):
     #if the answer is not zero, just continue
     if answer != 0:
         total_percentage_difference += predicted_diff/answer
+        
+#save the csv for visual inspection
+print("saving csv")
+stacked_arrays = np.vstack((input_data, output_data, predicted_values)).T
+header = "Input, Actual, Approximation"
+np.savetxt(os.path.join(models_folder, f"{model_name}_eval.csv"), stacked_arrays, delimiter=",", header=header, comments='')
         
 #use data to calculate values
 average = total_difference/num_test
